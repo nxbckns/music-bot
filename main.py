@@ -2,6 +2,19 @@ import discord
 from discord.ext import commands
 import yt_dlp
 import os
+from flask import Flask
+from threading import Thread
+
+app = Flask('')
+
+@app.route('/')
+def home():
+    return "Bot is alive!"
+
+def run():
+    app.run(host='0.0.0.0', port=8080)
+
+Thread(target=run).start()
 
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
@@ -48,5 +61,4 @@ async def skip(ctx):
         ctx.voice_client.stop()
         await ctx.send("Skipped!")
 
-token = os.environ.get("DISCORD_TOKEN")
-bot.run(token)
+@bot.command(
