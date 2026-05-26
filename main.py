@@ -2,19 +2,22 @@ import discord
 from discord.ext import commands
 import yt_dlp
 import os
-from flask import Flask
 from threading import Thread
+from http.server import HTTPServer, BaseHTTPRequestHandler
 
-app = Flask('')
+class Handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"Bot is alive!")
+    def log_message(self, format, *args):
+        pass
 
-@app.route('/')
-def home():
-    return "Bot is alive!"
+def run_server():
+    server = HTTPServer(('0.0.0.0', 8080), Handler)
+    server.serve_forever()
 
-def run():
-    app.run(host='0.0.0.0', port=8080)
-
-Thread(target=run).start()
+Thread(target=run_server, daemon=True).start()
 
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
@@ -32,4 +35,14 @@ async def on_message(message):
 def search_youtube(query):
     ydl_opts = {"format": "bestaudio", "noplaylist": True, "quiet": True}
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = yd
+        info = ydl.extract_info("ytsearch:" + query, download=False)
+        return info["entries"][0]
+
+@bot.command(name="p")
+async def play(ctx, *, query):
+    if not ctx.author.voice:
+        return await ctx.send("Join a voice channel first!")
+    await ctx.send("Searching...")
+    info = search_youtube(query)
+    url = info["url"]
+    title
